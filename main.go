@@ -1,11 +1,12 @@
 package main
 
 import (
-	_ "chat/routers"
+	_ "achat/routers"
 	"github.com/astaxie/beego"
+	"log"
 )
 
 func main() {
+	log.Println("hello bee")
 	beego.Run()
 }
-
