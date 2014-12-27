@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://127.0.0.1:8001");
+var ws = new WebSocket("ws://127.0.0.1:8080/ws_chat");
 ws.onopen = function(e){
     console.log("onopen");
     console.dir(e);
@@ -17,6 +17,7 @@ ws.onerror = function(e){
     console.log("onerror");
     console.dir(e);
 };
+
 $(function(){
     $('#msgform').submit(function(){
         ws.send($('#msg').val()+"\n");
