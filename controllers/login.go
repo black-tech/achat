@@ -59,7 +59,9 @@ func (this *LoginController) Post() {
 	}
 	log.Println("User: #" + user.name + "# Login successful:")
 
-	// this.SetSecureCookie("123456", "username", user.name)
-	this.Ctx.Output.Cookie("username", user.name)
-	this.Ctx.Output.Body([]byte("{\"key\":\"OK\",\"password\":\"" + password + "\"}"))
+	this.SetSecureCookie("achat", "username", user.name)
+	// this.Ctx.Output.Cookie("username", user.name)
+	// cookie:= this.Ctx.Input.Cookie("username")
+	// log.Println(cookie)
+	this.Ctx.Output.Body([]byte("{\"code\":\"OK\",\"password\":\"" + password + "\"}"))
 }

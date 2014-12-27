@@ -10,6 +10,7 @@
   	<body>
   		<div id="d_login">
 	  		<form action="/" method="post">
+	  			<div id="login_status"></div>
 	  			<p>用户名:<input type="text" id="t_username"></p>
 		  		<p>密码:<input type="password" id="t_password"></p>
 		  		<p><button id="b_login" type="button">登陆</button></p>

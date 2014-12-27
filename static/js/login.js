@@ -11,7 +11,14 @@ $(document).ready(function(){
 			success:function(msg){ 
 				var dataObj=eval("("+ msg +")");
 				console.log("MSG:"+msg);
-				console.log("OVER:"+dataObj.password);
+				console.log("OVER:"+dataObj.code);
+				if (dataObj.code != "OK") {
+					$("#login_status").html("<p>用户名或密码有误</p>");
+					console.log("Login Error");
+				}else{
+					$("#login_status").html("<p>登陆成功</p>");
+					location.href = "/chat_home"
+				};
 			}});
 
 		console.log("Cookie:"+$.cookie('username'));

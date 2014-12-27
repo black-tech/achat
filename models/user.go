@@ -8,9 +8,11 @@ import (
 )
 
 type User struct {
-	id   int
-	name string
-	pw   string
+	id     int
+	name   string
+	pw     string
+	cookie string
+	// rediscli redis.Client
 }
 
 func NewUser(username string, password string) (u *User, err error) {

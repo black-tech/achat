@@ -2,6 +2,7 @@ package routers
 
 import (
 	"achat/controllers"
+	"achat/models"
 	"bufio"
 	"container/list"
 	"fmt"
@@ -56,6 +57,8 @@ func ChatroomServer(ws *websocket.Conn) {
 
 func init() {
 
+	ch := models.NewChatHome()
+	ch.InitGlobal()
 	connid = 0
 	conns = list.New()
 
