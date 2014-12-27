@@ -2,7 +2,7 @@ package models
 
 import (
 	// "container/list"
-	// "errors"
+	"errors"
 	"github.com/astaxie/beego"
 	"github.com/hoisie/redis"
 	_ "log"
@@ -59,11 +59,6 @@ func (ch *ChatHome) RmWaittingUser(uname string) (err error) {
 	return
 }
 
-func (ch *ChatHome) AddWaittingUser(uname string) (err error) {
-	_, err = ch.rediscli.Lrem(ch.rls_waitting, 0, []byte(uname))
-	return
-}
-
 func (ch *ChatHome) IsLogin(uname string) (bool, error) {
 	v, err := ch.rediscli.Lrange(ch.rls_online, 0, -1)
 	for _, k := range v {
@@ -98,6 +93,28 @@ func (ch *ChatHome) IsWaitting(uname string) (bool, error) {
 		}
 	}
 	return false, err
+}
+
+func (ch *ChatHome) AddWaittingUser(uname string) error {
+	if b, err := ch.IsLogin(uname); b {
+		if err == nil {
+			err = errors.New(uname + " logined already")
+		}
+		return err
+	}
+	err := ch.rediscli.Lpush(ch.rls_waitting, []byte(uname))
+	return err
+}
+
+func (ch *ChatHome) AddOnlineUser(uname string) error {
+	if b, err := ch.IsOnline(uname); b {
+		if err == nil {
+			err = errors.New(uname + " is ONLINE already")
+		}
+		return err
+	}
+	err := ch.rediscli.Lpush(ch.rls_online, []byte(uname))
+	return err
 }
 
 // func (ch *ChatHome) WaittingToOnline() (string, error) {

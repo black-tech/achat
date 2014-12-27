@@ -19,10 +19,9 @@ func (this *ChatController) Get() {
 	this.Data["online_count"] = ch.GetOnlineCount()
 	this.Data["max_online_count"] = ch.MAX_ONLINE_COUNT
 
-	var u User
-	u.name = "user1"
-	this.Data["username"] = u.name
-	b, _ := ch.IsOnline(u.name)
+	u, _ := models.NewUser("user1", "hero")
+	this.Data["username"] = u.Name
+	b, _ := ch.IsOnline(u.Name)
 	this.Data["testData"] = b
 
 	this.TplNames = "chat.tpl"
