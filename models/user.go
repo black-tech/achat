@@ -1,21 +1,34 @@
 package models
 
 import (
+	"container/list"
+	"crypto/hmac"
+	"crypto/rand"
+	"crypto/sha1"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/hoisie/redis"
-	"net/websocket"
+	"log"
+	"math/big"
+	// "net/websocket"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type User struct {
 	Id       int
 	Name     string
 	Pw       string
+	Salt     string
 	Cookie   string
 	rediscli redis.Client
-	ws       websocket.Conn
+	// Ws       websocket.Conn
 }
+
+var ConnUsers list.List
 
 func NewUser(username string, password string) (u *User, err error) {
 
@@ -23,26 +36,37 @@ func NewUser(username string, password string) (u *User, err error) {
 	u.Name = username
 	u.Pw = password
 	u.rediscli.Addr = beego.AppConfig.String("redis_addr")
-	if u.Pw = beego.AppConfig.String("redis_auth"); "" != u.Pw {
-		u.rediscli.Auth(u.Pw)
+	if authPW := beego.AppConfig.String("redis_auth"); "" != u.Pw {
+		u.rediscli.Auth(authPW)
 	}
 	var userps []byte
 	userps, err = u.rediscli.Hget("userlist", u.Name)
-	if err != nil || u.Pw != fmt.Sprintf("%s", userps) {
+	if err != nil || u.Pw != string(userps) {
+		log.Println(u.Pw)
 		err = errors.New("Username Or Password Error")
 	}
-
 	return
 }
+func (u *User) LoginSucc() {
+	u.GetNewSalt()
+	vs := base64.URLEncoding.EncodeToString([]byte(u.Pw))
+	timestamp := strconv.FormatInt(time.Now().UnixNano(), 10)
+	h := hmac.New(sha1.New, []byte(u.Salt))
+	fmt.Fprintf(h, "%s%s", vs, timestamp)
+	sig := fmt.Sprintf("%02x", h.Sum(nil))
+	u.Cookie = strings.Join([]string{vs, timestamp, sig}, "|")
 
-// func (u *User) Auth(name string, pw string) (id int, ok bool) {
+	ConnUsers.PushBack(u)
 
-// 	redis_addr := beego.AppConfig.String("redis_addr")
-// 	rediscli := redis.Client{
-// 		Addr: redis_addr,
-// 		Db:   0,
-// 		// Password:    "pink",
-// 		MaxPoolSize: 10000,
-// 	}
-// 	return 0, false
-// }
+}
+func (u *User) GetNewSalt() {
+	rnd, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	if err != nil {
+		log.Printf("GetNewSalt:rand.Int() error : %v \n", err)
+		rnd = big.NewInt(4369)
+	}
+	u.Salt = fmt.Sprintln(rnd)
+}
+func (u *User) DoNothing() {
+
+}

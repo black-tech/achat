@@ -21,6 +21,6 @@ $(document).ready(function(){
 				};
 			}});
 
-		console.log("Cookie:"+$.cookie('username'));
+		console.log("Cookie:"+$.cookie('achat'));
 	});
 });

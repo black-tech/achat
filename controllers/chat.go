@@ -15,8 +15,9 @@ func (this *ChatController) Get() {
 
 	ch := models.NewChatHome()
 
-	this.Data["cookie"] = this.Ctx.Input.Cookie("username")
+	this.Data["cookie"] = this.Ctx.Input.Cookie("achat")
 	this.Data["online_count"] = ch.GetOnlineCount()
+	this.Data["waitting_count"] = ch.GetWaittingCount()
 	this.Data["max_online_count"] = ch.MAX_ONLINE_COUNT
 
 	u, _ := models.NewUser("user1", "hero")

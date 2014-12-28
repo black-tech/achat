@@ -3,8 +3,8 @@ package controllers
 import (
 	"achat/models"
 	"github.com/astaxie/beego"
-	// "github.com/hoisie/redis"
 	"log"
+	// "github.com/hoisie/redis"
 )
 
 type LoginController struct {
@@ -12,10 +12,6 @@ type LoginController struct {
 }
 
 func (this *LoginController) Post() {
-	uname := this.Ctx.Input.Cookie("username")
-	// if uname != nil {
-	log.Println("cookie :", uname)
-	// }
 
 	username := this.GetString("username")
 	password := this.GetString("password")
@@ -29,11 +25,12 @@ func (this *LoginController) Post() {
 		return
 	}
 	log.Println("User: #" + user.Name + "# Login successful:")
+	user.LoginSucc()
+	// log.Println("UesrSalt: " + user.Salt + "UserCookie" + user.Cookie)
 
-	this.SetSecureCookie("achat", "username", user.Name)
-	// this.Ctx.Output.Cookie("username", user.name)
+	// this.SetSecureCookie("achat", "username", user.Name)
+	this.Ctx.Output.Cookie("achat", user.Cookie)
 	// cookie:= this.Ctx.Input.Cookie("username")
 	// log.Println(cookie)
 	this.Ctx.Output.Body([]byte("{\"code\":\"OK\"}"))
-
 }

@@ -9,8 +9,9 @@
 
   	<body>
           <div>
-            <p>在线人数: <span id="online_count">{{.online_count}}</span></p>
             <p>最多允许同时在线 {{.max_online_count}} 人</p>
+            <p>在线人数: <span id="online_count">{{.online_count}}</span></p>
+            <p>等候人数: <span id="waitting_count">{{.waitting_count}}</span></p>
             <p>{{.testData}}</p>
           </div>
   		<div id="log" style="height: 300px;overflow-y: scroll;border: 1px solid #CCC;">
@@ -18,17 +19,18 @@
   		<div>
   		  <form>
   		      <p>
-  		          Message: <input id="message" type="text" value="Hello, world!">
-  		          <button onclick="send();" type="button">Send Message</button>
+  		          Message: <input id="msg" type="text" value="Hello, world!">
+  		          <button id="msgform" type="button">发送</button>
 
   		      </p>
   		  </form>
   		</div>
 		<script type="text/javascript" src="/static/js/jquery-1.11.1.min.js"></script>
 		<script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="/static/js/chat.js"></script>
 		
 		<script type="text/javascript">
-                  console.log("Cookie:"+$.cookie('username'));
+
           </script>  
 	</body>
 </html>
