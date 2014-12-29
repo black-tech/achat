@@ -3,6 +3,7 @@ package models
 import (
 	"bufio"
 	"container/list"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"github.com/astaxie/beego"
@@ -65,15 +66,17 @@ func ChatroomServer(ws *websocket.Conn) {
 				ch.RmOnlineUser(user.Name)
 				ch.WaittingToOnline()
 				SendMessage(item_ws, `{"Code":"OK","Data":"Welcome `+user.Name+`"}`)
-				SendMessage(nil, `{"Code":"online_user_count","Data": `+strconv.Itoa(ch.GetOnlineCount())+`}`)
-				SendMessage(nil, `{"Code":"waitting_user_count","Data": `+strconv.Itoa(ch.GetWaittingCount())+`}`)
 			} else {
 				ch.RmWaittingUser(user.Name)
-				SendMessage(nil, `{"Code":"waitting_user_count","Data": `+strconv.Itoa(ch.GetWaittingCount())+`}`)
 			}
+			SendMessage(nil, `{"Code":"online_user_count","Data": `+strconv.Itoa(ch.GetOnlineCount())+`}`)
+			SendMessage(nil, `{"Code":"waitting_user_count","Data": `+strconv.Itoa(ch.GetWaittingCount())+`}`)
+			// SendMessage(nil, `{"Code":"online_user_list","Data": "`+ch.OnlineListToBase64()+`"}`)
+			// SendMessage(nil, `{"Code":"waitting_user_list","Data": "`+ch.WaittingListToBase64()+`"}`)
 			break
 		}
 		log.Println("Received: " + string(data))
+		log.Println(`{"Code":"online_user_list","Data": "` + ch.OnlineListToBase64() + `"}`)
 		var msg Msg
 		err = json.Unmarshal(data, &msg)
 		if err != nil {
@@ -87,12 +90,15 @@ func ChatroomServer(ws *websocket.Conn) {
 					if ch.GetOnlineCount() < ch.MAX_ONLINE_COUNT && ch.GetWaittingCount() == 0 {
 						ch.AddOnlineUser(user.Name)
 						SendMessage(item_ws, `{"Code":"OK","Data":"Welcome `+user.Name+`"}`)
-						SendMessage(nil, `{"Code":"online_user_count","Data": `+strconv.Itoa(ch.GetOnlineCount())+`}`)
-						SendMessage(nil, `{"Code":"waitting_user_count","Data": `+strconv.Itoa(ch.GetWaittingCount())+`}`)
 					} else {
 						ch.AddWaittingUser(user.Name)
 						SendMessage(nil, `{"Code":"wait","Data": `+strconv.Itoa(ch.GetWaittingCount())+`}`)
 					}
+					SendMessage(nil, `{"Code":"online_user_count","Data": `+strconv.Itoa(ch.GetOnlineCount())+`}`)
+					SendMessage(nil, `{"Code":"waitting_user_count","Data": `+strconv.Itoa(ch.GetWaittingCount())+`}`)
+					// SendMessage(nil, `{"Code":"online_user_list","Data": "`+ch.OnlineListToBase64()+`"}`)
+					// SendMessage(nil, `{"Code":"waitting_user_list","Data": "`+ch.WaittingListToBase64()+`"}`)
+
 					break
 				}
 			}
@@ -212,4 +218,40 @@ func (ch *ChatHome) WaittingToOnline() (string, error) {
 		ch.AddOnlineUser(string(v))
 	}
 	return string(v), err
+}
+
+func (ch *ChatHome) GetOnlineList() []string {
+	bl, _ := ch.rediscli.Lrange(ch.rls_online, 0, -1)
+	var sl []string
+	for i, v := range bl {
+		sl[i] = string(v)
+	}
+	return sl
+}
+
+func (ch *ChatHome) GetWaittingList() []string {
+	bl, _ := ch.rediscli.Lrange(ch.rls_waitting, 0, -1)
+	var sl []string
+	for i, v := range bl {
+		sl[i] = string(v)
+	}
+	return sl
+}
+
+func (ch *ChatHome) OnlineListToBase64() string {
+	sl := ch.GetOnlineList()
+	s := ""
+	for i, v := range sl {
+		s += v + "(" + strconv.Itoa(i) + "); "
+	}
+	return base64.URLEncoding.EncodeToString([]byte(s))
+}
+
+func (ch *ChatHome) WaittingListToBase64() string {
+	sl := ch.GetWaittingList()
+	s := ""
+	for i, v := range sl {
+		s += v + "(" + strconv.Itoa(i) + "); "
+	}
+	return base64.URLEncoding.EncodeToString([]byte(s))
 }

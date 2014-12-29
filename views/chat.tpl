@@ -12,7 +12,8 @@
             <p>最多允许同时在线 {{.max_online_count}} 人</p>
             <p>在线人数: <span id="online_count">{{.online_count}}</span></p>
             <p>等候人数: <span id="waitting_count">{{.waitting_count}}</span></p>
-            <p>{{.testData}}</p>
+            <p>在线列表: <span id="online_list">{{.online_list}}</span></p>
+            <p>等候列表: <span id="waitting_list">{{.waitting_list}}</span></p>
           </div>
   		<div id="log" style="height: 300px;overflow-y: scroll;border: 1px solid #CCC;">
   		</div>

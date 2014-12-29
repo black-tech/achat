@@ -40,6 +40,12 @@ function controlMsg (dataObj) {
       }
       else if (dataObj.Code == "waitting_user_count"){
             $('#waitting_count').html(dataObj.Data);
+      } 
+      else if (dataObj.Code == "online_user_list"){
+            $('#online_list').html(dataObj.Data);
+      }
+      else if (dataObj.Code == "waitting_user_list"){
+            $('#waitting_list').html(dataObj.Data);
       }
       else if (dataObj.Code == "wait"){
             $('#waitting_count').html(dataObj.Data);
