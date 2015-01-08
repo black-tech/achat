@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/base64"
 	"encoding/json"
+	"strings"
 )
 
 type Message struct {
@@ -18,6 +19,8 @@ func NewMsg() (msg *Message) {
 }
 func DecodeJson(data string) (msg *Message) {
 	msg = &Message{}
+	data = strings.Replace(data, "+", "-", -1)
+	// func Replace(s, old, new string, n int) string
 	err := json.Unmarshal([]byte(data), msg)
 	if nil != err {
 		msg.checkErr()
@@ -86,5 +89,6 @@ func (m *Message) ToBase64String() (s string) {
 		s += `"]`
 	}
 	s += "}"
+	s = strings.Replace(s, "-", "+", -1)
 	return
 }
