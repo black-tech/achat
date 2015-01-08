@@ -3,25 +3,31 @@ function Message (code) {
 	this.Data = '';
 	this.Desc = '';
 	this.Supp = new Array();
+            this.statue = 0;
 }
 function Message (code) {
 	this.Code = code;
 	this.Data = '';
 	this.Desc = '';
 	this.Supp = new Array();
+            this.statue = 0;
 }
 function Message (code,data) {
 	this.Code = code;
 	this.Data = data;
 	this.Desc = '';
 	this.Supp = new Array();
+            this.statue = 0;
 }
 function Message (code,data,desc) {
 	this.Code = code;
 	this.Data = data;
 	this.Desc = desc;
 	this.Supp = new Array();
+            this.statue = 0;
 }
+
+// 解码Base64的数据到结构体
 Message.prototype.decodeJSON = function(JsonStr) {
             var jsonObj=eval("("+ JsonStr +")");
             if(null != jsonObj.Code)  {
@@ -34,10 +40,14 @@ Message.prototype.decodeJSON = function(JsonStr) {
                   this.Desc=decode64(jsonObj.Desc);
             }
             this.Supp = new Array();
-            for(var i=0;i<jsonObj.Supp.length;i++){
-                  this.Supp[i]=decode64(jsonObj.Supp[i]);
+            if (null!=jsonObj.Supp){
+                for(var i=0;i<jsonObj.Supp.length;i++){
+                      this.Supp[i]=decode64(jsonObj.Supp[i]);
+                }
             }
+            this.statue = 0;
 }
+
 Message.prototype.encodeJSON = function(){
 	 if(null != this.Code)  {
                   this.Code=encode64(this.Code);
@@ -51,9 +61,37 @@ Message.prototype.encodeJSON = function(){
             for(var i=0;i<this.Supp.length;i++){
                   this.Supp[i]=encode64(this.Supp[i]);
             }
+            this.statue = 1;
 }
 Message.prototype.toString = function() {
-	this.encodeJSON();
+    var s ='{"Code":"';
+    if(null != this.Code)  {
+        s+=this.Code+'"';
+            }
+            if(null != this.Data){
+                s+=',"Data":"'+this.Data+'"';
+            }
+            if (null != this.Desc){
+                s+=',"Desc":"'+this.Desc+'"';
+            }
+            if (this.Supp.length>0) {
+                s+=',"Supp":['
+               for(var i=0;i<this.Supp.length;i++){
+                    if(0==i){
+                        s+='"'+this.Supp[i]+'"';
+                    }else{
+                        s+=',"'+this.Supp[i]+'"';
+                    }
+                }
+                s+=']';
+    }
+    s+='}\n';
+    return s;
+}
+Message.prototype.toBase64String = function() {
+            if(this.statue==0){
+                    this.encodeJSON();
+            }
 	var s ='{"Code":"';
 	if(null != this.Code)  {
 		s+=this.Code+'"';
@@ -75,7 +113,7 @@ Message.prototype.toString = function() {
 	            }
 	            s+=']';
 	}
-	s+='}';
+	s+='}\n';
 	return s;
 }
 
@@ -96,7 +134,7 @@ test_jsonToStr=function() {
 	// {
 	// 	console.log(v.Supp[i]);
 	// }
-	console.log(v.toString());
+	console.log(v.toBase64String());
 }
 
 var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";

@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/websocket"
+	"strconv"
 )
 
 var WSChatClients list.List
@@ -22,7 +23,8 @@ func NewWSChatClient(ws *websocket.Conn) (w *WSChatClient) {
 	return
 }
 func (w *WSChatClient) Close() {
-	WSChatClients.PushBack(w.item_ws)
+	w.SendCloseMessage()
+	WSChatClients.Remove(w.item_ws)
 	w.ws.Close()
 }
 func (w *WSChatClient) SendMessage(self *list.Element, data string) {
@@ -38,44 +40,32 @@ func (w *WSChatClient) SendMessage(self *list.Element, data string) {
 	}
 }
 
-// func SendMessage(self *list.Element, data string) {
-// 	for item := WSConns.Front(); item != nil; item = item.Next() {
-// 		ws, ok := item.Value.(*websocket.Conn)
-// 		if !ok {
-// 			panic("item not *websocket.Conn")
-// 		}
-// 		if item == self {
-// 			continue
-// 		}
-// 		io.WriteString(ws, data)
-// 	}
-// }
-
 func ChatroomServer(ws *websocket.Conn) {
 	w := NewWSChatClient(ws)
 	defer w.Close()
-	// auth := false
-	// ch := NewChatHome()
-	// user.DoNothing()
-	// item_ws := WSConns.PushBack(ws)
-	// defer WSConns.Remove(item_ws)
-
-	// SendMessage(nil, fmt.Sprintf("welcome %s join\n", "name"))
 
 	r := bufio.NewReader(ws)
 	log.Println("Connected ")
 	for {
 		data, err := r.ReadBytes('\n')
 		if err != nil {
-			// if b, _ := ch.IsOnline("user.Name"); b {
-			// 	ch.RmOnlineUser("user.Name")
-			// 	ch.WaittingToOnline()
-			// } else {
-			// 	ch.RmWaittingUser("user.Name")
-			// }
 			break
 		}
 		log.Println("Received: " + string(data))
+		rmsg := DecodeJson(string(data))
+		log.Println(rmsg.ToString())
+		if rmsg.Code == "close" {
+			break
+		} else {
+			w.controlMsg(rmsg)
+		}
+		// msg := NewMsg()
+		// msg.Code = "HeroServer"
+		// log.Println("Send Will Start")
+
+		// log.Println(WSChatClients.Len())
+		// w.SendMessage(nil, msg.ToBase64String())
+		// log.Println("Send Will Over")
 		// log.Println(`{"Code":"online_user_list","Data": "` + ch.OnlineListToBase64() + `"}`)
 		// var msg Msg
 		// err = json.Unmarshal(data, &msg)
@@ -84,4 +74,32 @@ func ChatroomServer(ws *websocket.Conn) {
 		// }
 	}
 	log.Println("Listenning Over")
+}
+func (wc *WSChatClient) controlMsg(rmsg *Message) {
+	msg := NewMsg()
+	switch rmsg.Code {
+	case "conn":
+		wc.SendWelcomeMessage()
+	case "msg":
+		msg = rmsg
+		wc.SendMessage(wc.item_ws, msg.ToBase64String())
+	}
+}
+func (w *WSChatClient) SendCloseMessage() {
+	msg := NewMsg()
+	msg.Code = "msg"
+	msg.Data = "One go away"
+	w.SendMessage(w.item_ws, msg.ToBase64String())
+	msg.Code = "online_user_count"
+	msg.Data = strconv.Itoa(WSChatClients.Len() - 1)
+	w.SendMessage(w.item_ws, msg.ToBase64String())
+}
+func (w *WSChatClient) SendWelcomeMessage() {
+	msg := NewMsg()
+	msg.Code = "msg"
+	msg.Data = "One joined"
+	w.SendMessage(nil, msg.ToBase64String())
+	msg.Code = "online_user_count"
+	msg.Data = strconv.Itoa(WSChatClients.Len())
+	w.SendMessage(nil, msg.ToBase64String())
 }

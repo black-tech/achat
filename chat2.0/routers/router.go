@@ -2,9 +2,9 @@ package routers
 
 import (
 	"funx/controllers"
-	// "funx/models"
+	"funx/models"
 	"github.com/astaxie/beego"
-	// "net/websocket"
+	"net/websocket"
 )
 
 func init() {
@@ -14,6 +14,6 @@ func init() {
 	beego.Router("/info", &controllers.InfoController{})
 	beego.Router("/chat", &controllers.ChatController{})
 
-	// beego.Router("/chat_websocket", websocket.Handler(models.ChatroomServer))
+	beego.Handler("/chat_websocket", websocket.Handler(models.ChatroomServer))
 	// beego.Router("/b", &controllers.BController{})
 }
